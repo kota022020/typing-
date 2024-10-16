@@ -1,1 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>こたのタイピングゲーム😎</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="title">こたのタイピングゲーム😎</header>
 
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+
+        <div id="word-display">スタートを押して開始！</div>
+
+        <input type="text" id="input-box" placeholder="ここに入力" disabled>
+
+        <div id="time-display">残り時間: 60秒</div>
+        
+        <!-- ゲーム終了メッセージを表示する要素を追加 -->
+        <div id="game-message" style="color: red; font-size: 24px; margin-top: 20px;"></div>
+
+        <button id="start-btn">スタート</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>オンラインタイピング対戦</title>
+</head>
+<body>
+    <h1>タイピング対戦</h1>
+    <p>相手のスコア: <span id="opponent-score">0</span></p>
+    <p>自分のスコア: <span id="player-score">0</span></p>
+    <input type="text" id="input-box" placeholder="ここに入力">
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const inputBox = document.getElementById('input-box');
+        const playerScoreDisplay = document.getElementById('player-score');
+        const opponentScoreDisplay = document.getElementById('opponent-score');
+
+        let playerScore = 0;
+
+        // プレイヤーが単語を正しく入力したときの処理
+        inputBox.addEventListener('input', () => {
+            const typedWord = inputBox.value.trim();
+            // ここで単語が正しいかチェックする（サーバー側でもチェックすることが重要）
+
+            if (typedWord === "正しい単語") {
+                playerScore += 10;  // スコアを加算
+                playerScoreDisplay.textContent = playerScore;
+                socket.emit('wordTyped', { score: 10 });  // サーバーにスコアを送信
+                inputBox.value = '';  // 入力欄をクリア
+            }
+        });
+
+        // サーバーから対戦相手のスコアを受け取ったときの処理
+        socket.on('updateScore', (data) => {
+            opponentScoreDisplay.textContent = data.score;
+        });
+    </script>
+</body>
+</html>
