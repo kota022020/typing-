@@ -7,9 +7,9 @@ const gameMessage = document.getElementById('game-message');
 
 // 日本語の単語を複数のローマ字に変換するための辞書（複数の入力パターンに対応）
 const romajiDictionary = {
-    'ハレー彗星': ['hare-suisei', 'halesuisei'],
-    '日本文化': ['nihonbunka', 'nipponbunka'],
-    '伝統料理': ['dentouryouri', 'dentouryori', 'dentouriyori', 'dentouriyouri'],
+    'ハレー彗星': ['hare-suisei'],
+    '日本文化': ['nihonbunka', 'nihonnbunka','nihonbunnka','nihonnbunnka'],
+    '伝統料理': ['dentouryouri', 'denntouryouri', ],
     '美味しい寿司': ['oishiisushi', 'oisiisusi', 'oishiisusi', 'oisiisushi'],
     '宇宙旅行': ['uchuuryokou', 'utyuuryokou', 'uchuuryoko', 'utyuuryoko'],
     '科学技術': ['kagakugijutsu', 'kagakugizyutu', 'kagakugizyutsu', 'kagakugijutu'],
