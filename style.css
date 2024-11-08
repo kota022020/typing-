@@ -1,3 +1,7 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
     background-color: #f0f0f0;
     font-family: Arial, sans-serif;
@@ -44,6 +48,7 @@ body {
     width: 80%;
     padding: 10px;
     font-size: 18px;
+    margin-bottom: 20px;
 }
 
 #time-display {
@@ -51,9 +56,23 @@ body {
     margin: 10px 0;
 }
 
+#game-message {
+    font-size: 20px;
+    color: red;
+    margin: 20px 0;
+}
+
 button {
     padding: 10px 20px;
     font-size: 18px;
     margin-top: 10px;
     cursor: pointer;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #45a049;
 }
