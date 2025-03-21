@@ -3,25 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>こたのタイピングゲーム</title>
-    <link rel="stylesheet" href="style.css">
+    <title>タイピングゲーム</title>
+    <style>
+        body {
+            font-family: "Hiragino Sans", "Arial", sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #87cefa, #ffacd6);
+        }
+        .text-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .question {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 2vw;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .japanese, .romaji {
+            display: flex;
+            gap: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+        .letter {
+            color: #333;
+        }
+        .correct {
+            color: #4CAF50; /* 正しい部分 */
+        }
+        .current {
+            color: #FFA500; /* 現在入力中の部分 */
+        }
+        .hidden-input {
+            opacity: 0;
+            position: absolute;
+            pointer-events: none;
+            ime-mode: disabled;
+        }
+        .timer {
+            position: absolute;
+            top: 10px;
+            left: 10px; /* 左上に配置 */
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 2px solid #000;
+        }
+        .progress-bar {
+            position: absolute;
+            top: 40px;
+            right: 10px; /* 右上に配置 */
+            width: 200px;
+            height: 20px;
+            background: #ccc;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress {
+            width: 0;
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header class="title">こたのタイピングゲーム😎</header>
-
-        <div class="progress-container">
-            <div id="progress-bar"></div>
+    <div id="game" class="text-container">
+        <div class="timer" id="timer">残り時間: 60秒</div>
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
         </div>
-
-        <div id="word-display">スタートを押して開始！</div>
-
-        <input type="text" id="input-box" placeholder="ここに入力" disabled>
-
-        <div id="time-display">残り時間: 60秒</div>
-        <button id="start-btn">スタート</button>
+        <div class="question">
+            <div class="japanese" id="japaneseText"></div>
+            <div class="romaji" id="romajiContainer"></div>
+        </div>
+        <input type="text" class="hidden-input" id="inputText" autocomplete="off" autofocus>
     </div>
+    <script>
+        'use strict';
 
-    <script src="script.js"></script>
+        let timeLeft = 60;
+        const timerElement = document.getElementById('timer');
+        const progressElement = document.getElementById('progress');
+        const inputText = document.getElementById('inputText');
+        const japaneseText = document.getElementById('japaneseText');
+        const romajiContainer = document.getElementById('romajiContainer');
+
+        const questions = [
+            
+
+
+{ japanese: ['か', 'に'], romaji: ['ka', 'ni'] }, { japanese: ['く', 'ま'], romaji: ['ku', 'ma'] }, { japanese: ['あ', 'い'], romaji: ['a', 'i'] }, { japanese: ['も', 'も'], romaji: ['mo', 'mo'] }, { japanese: ['ぱ', 'ぱ'], romaji: ['pa', 'pa'] }, { japanese: ['く', 'ま'], romaji: ['ku', 'ma'] }, { japanese: ['あ', 'い'], romaji: ['a', 'i'] }, { japanese: ['あ', 'か'], romaji: ['a', 'ka'] }, { japanese: ['あ', 'じ'], romaji: ['a', 'ji'] }, { japanese: ['あ', 'な'], romaji: ['a', 'na'] }, { japanese: ['あ', 'ゆ'], romaji: ['a', 'yu'] }, { japanese: ['い', 'か'], romaji: ['i', 'ka'] }, { japanese: ['石'], romaji: ['isi'] }, { japanese: ['犬'], romaji: ['inu'] }, { japanese: ['牛'], romaji: ['usi'] }, { japanese: ['嘘'], romaji: ['uso'] }, { japanese: ['ウ', 'ニ'], romaji: ['u', 'ni'] }, { japanese: ['梅'], romaji: ['umi'] }, { japanese: ['エ', 'イ'], romaji: ['e', 'i'] }, { japanese: ['サ', 'バ'], romaji: ['sa', 'ba'] }, { japanese: ['エ', 'ビ'], romaji: ['e', 'bi'] }, { japanese: ['笑', 'み'], romaji: ['e', 'mi'] }, { japanese: ['カ', 'ニ'], romaji: ['ka', 'ni'] }, { japanese: ['ワ', 'ニ'], romaji: ['wa', 'ni'] }, { japanese: ['ゴ', 'ム'], romaji: ['go', 'mu'] }, { japanese: ['サ', 'ル'], romaji: ['sa', 'ru'] }, { japanese: ['寿', '司'], romaji: ['su', 'si'] }, { japanese: ['タ', 'コ'], romaji: ['ta', 'ko'] }, { japanese: ['タ', 'マ'], romaji: ['ta', 'ma'] }, { japanese: ['チ', 'ゲ'], romaji: ['ti', 'ge'] }, { japanese: ['ポ', 'チ'], romaji: ['po', 'ti'] }, { japanese: ['ミ', 'ケ'], romaji: ['mi', 'ke'] }, { japanese: ['ぶ', 'り'], romaji: ['bu', 'ri'] }, { japanese: ['ピ', 'ザ'], romaji: ['pi', 'za'] }, { japanese: ['春'], romaji: ['haru'] }, { japanese: ['夏'], romaji: ['natu'] }, { japanese: ['秋'], romaji: ['aki'] }, { japanese: ['冬'], romaji: ['huyu'] }, { japanese: ['時', '価'], romaji: ['ji', 'ka'] }, { japanese: ['猫'], romaji: ['neko'] }, { japanese: ['井', '戸'], romaji: ['i', 'do'] }, { japanese: ['月'], romaji: ['tuki'] }, { japanese: ['竹'], romaji: ['take'] }, { japanese: ['砂'], romaji: ['suna'] }, { japanese: ['海'], romaji: ['umi'] }, { japanese: ['貝'], romaji: ['kai'] }, { japanese: ['ネ', 'ギ'], romaji: ['ne', 'gi'] }, { japanese: ['地', '下'], romaji: ['ti', 'ka'] }, { japanese: ['風'], romaji: ['kaze'] }, { japanese: ['城'], romaji: ['siro'] }, { japanese: ['壁'], romaji: ['kabe'] }, { japanese: ['象'], romaji: ['zou'] }, { japanese: ['ノ', 'リ'], romaji: ['no', 'ri'] }, { japanese: ['イ', 'ス'], romaji: ['i', 'su'] }, { japanese: ['皿'], romaji: ['sara'] }, { japanese: ['花'], romaji: ['hana'] }, { japanese: ['馬'], romaji: ['uma'] }, { japanese: ['パン'], romaji: ['pan'] }, { japanese: ['米'], romaji: ['kome'] }, { japanese: ['ガ', 'ム'], romaji: ['ga', 'mu'] }, { japanese: ['ド', 'ア'], romaji: ['do', 'a'] }, { japanese: ['糸'], romaji: ['ito'] }, { japanese: ['雪'], romaji: ['yuki'] }, { japanese: ['夜', '景'], romaji: ['ya', 'kei'] }, { japanese: ['ラ', 'イ', 'チ'], romaji: ['ra', 'i', 'ti'] }, { japanese: ['資', '源'], romaji: ['si', 'gen'] }, { japanese: ['モ', 'デ', 'ル'], romaji: ['mo', 'de', 'ru'] }, { japanese: ['コ', 'イ', 'ン'], romaji: ['ko', 'i','n'] }, { japanese: ['ア', 'フ', 'ロ'], romaji: ['a', 'fu', 'ro'] }, { japanese: ['漢', '字'], romaji: ['kan', 'ji'] }, { japanese: ['バ', 'ナ', 'ナ'], romaji: ['ba', 'na', 'na'] }, { japanese: ['バ', 'ット'], romaji: ['ba', 'tto'] } ]; [ { japanese: ['ア', 'ナ', 'ゴ'], romaji: ['a', 'na', 'go'] }, { japanese: ['う', 'な', 'ぎ'], romaji: ['u', 'na', 'gi'] }, { japanese: ['わ', 'ー', 'い'], romaji: ['wa', '-', 'i'] }, { japanese: ['ス', 'イ', 'カ'], romaji: ['su', 'i', 'ka'] }, { japanese: ['い', 'ち', 'ご'], romaji: ['i', 'ti', 'go'] }, { japanese: ['黒', '酢'], romaji: ['ku', 'ro', 'zu'] }, { japanese: ['つ', 'つ', 'じ'], romaji: ['tu', 'tu', 'ji'] }, { japanese: ['ゾ', 'ン', 'ビ'], romaji: ['zo', 'n', 'bi'] }, { japanese: ['豪', '雨'], romaji: ['go', 'u', 'u'] }, { japanese: ['カ', 'ー', 'ブ'], romaji: ['ka', '-', 'bu'] }, { japanese: ['赤', '身'], romaji: ['a', 'ka', 'mi'] }, { japanese: ['ア', 'ワ', 'ビ'], romaji: ['a', 'wa', 'bi'] }, { japanese: ['イ', 'ク', 'ラ'], romaji: ['i', 'ku', 'ra'] }, { japanese: ['イ', 'ワ', 'シ'], romaji: ['i', 'wa', 'si'] }, { japanese: ['お', '茶'], romaji: ['o', 'tya'] }, { japanese: ['カ', 'エ', 'ル'], romaji: ['ka', 'e', 'ru'] }, { japanese: ['カ', 'レ', 'イ'], romaji: ['ka', 're', 'i'] }, { japanese: ['あ', 'れ', '？'], romaji: ['a', 're', '?'] }, { japanese: ['毛', 'ガ', 'ニ'], romaji: ['ke', 'ga', 'ni'] }, { japanese: ['殺', '気'], romaji: ['sa', 'kki'] }, { japanese: ['サ', 'ン', 'マ'], romaji: ['sa', 'n', 'ma'] }, { japanese: ['は', 'ま', 'ち'], romaji: ['ha', 'ma', 'ti'] }, { japanese: ['白', '身'], romaji: ['si', 'ro', 'mi'] }, { japanese: ['カ', 'ッ', 'パ'], romaji: ['ka', 'ppa'] }, { japanese: ['に', 'ゃ', 'ー'], romaji: ['nya', '-'] }, { japanese: ['バ', 'ッ', 'タ'], romaji: ['ba', 'tta'] }, { japanese: ['ひ', 'ら', 'め'], romaji: ['hi', 'ra', 'me'] }, { japanese: ['ホ', 'タ', 'テ'], romaji: ['ho', 'ta', 'te'] }, { japanese: ['マ', 'ウ', 'ス'], romaji: ['ma', 'u', 'su'] }, { japanese: ['マ', 'グ', 'ロ'], romaji: ['ma', 'gu', 'ro'] }, { japanese: ['ス', 'ル', 'メ'], romaji: ['su', 'ru', 'me'] }, { japanese: ['酸', '素'], romaji: ['sa', 'n', 'so'] }, { japanese: ['プ', 'リ', 'ン'], romaji: ['pu', 'ri', 'n'] }, { japanese: ['わ', 'さ', 'び'], romaji: ['wa', 'sa', 'bi'] }, { japanese: ['カ', 'ッ', 'パ'], romaji: ['ka', 'ppa'] }, { japanese: ['マ', 'ッ', 'チ'], romaji: ['ma', 'tti'] }, { japanese: ['あ', 'ー', '！'], romaji: ['a', '-', '!'] }, { japanese: ['わ', 'ー', '！'], romaji: ['wa', '-', '!'] }, { japanese: ['ト', 'ン', 'ボ'], romaji: ['to', 'n', 'bo'] }, { japanese: ['電', '話'], romaji: ['de', 'n', 'wa'] }, { japanese: ['ス', 'ズ', 'メ'], romaji: ['su', 'zu', 'me'] }, { japanese: ['レ', 'タ', 'ス'], romaji: ['re', 'ta', 'su'] }, { japanese: ['バ', 'ケ', 'ツ'], romaji: ['ba', 'ke', 'tu'] }, { japanese: ['ボ', 'ー', 'ル'], romaji: ['bo', '-', 'ru'] }, { japanese: ['メ', 'ガ', 'ネ'], romaji: ['me', 'ga', 'ne'] }, { japanese: ['小', '鳥'], romaji: ['ko', 'to', 'ri'] }, { japanese: ['必', '死'], romaji: ['hi', 'ssi'] }, { japanese: ['ナ', 'マ', 'ズ'], romaji: ['na', 'ma', 'zu'] }, { japanese: ['ア', 'サ', 'リ'], romaji: ['a', 'sa', 'ri'] }, { japanese: ['シ', 'ジ', 'ミ'], romaji: ['si', 'ji', 'mi'] }, { japanese: ['虫', '歯'], romaji: ['mu', 'si', 'ba'] }, { japanese: ['尻', '尾'], romaji: ['si', 'ppo'] }, { japanese: ['バ', 'ッ', 'ト'], romaji: ['ba', 'tto'] }, { japanese: ['募', '金'], romaji: ['bo', 'ki', 'n'] }, { japanese: ['う', 'さ', 'ぎ'], romaji: ['u', 'sa', 'gi'] }, { japanese: ['ア', 'ヒ', 'ル'], romaji: ['a', 'hi', 'ru'] }, { japanese: ['ヒ', 'ツ', 'ジ'], romaji: ['hi', 'tu', 'ji'] }, { japanese: ['机'], romaji: ['tu', 'kue'] }, { japanese: ['ア', 'イ', 'ス'], romaji: ['a', 'i', 'su'] }, { japanese: ['花', '火'], romaji: ['ha', 'na', 'bi'] }, { japanese: ['お', 'や', 'つ'], romaji: ['o', 'ya', 'tu'] }, { japanese: ['ミ', 'ル', 'ク'], romaji: ['mi', 'ru', 'ku'] }, { japanese: ['コ', 'ッ', 'プ'], romaji: ['ko', 'ppu'] }, { japanese: ['お', '風', '呂'], romaji: ['o', 'hu', 'ro'] }, { japanese: ['桜'], romaji: ['sa', 'ku', 'ra'] }, { japanese: ['輪', 'ゴ', 'ム'], romaji: ['wa', 'go', 'mu'] }, { japanese: ['名', '刺'], romaji: ['me', 'si'] }, { japanese: ['ノ', 'ー', 'ト'], romaji: ['no', '-', 'to'] }, { japanese: ['車'], romaji: ['ku', 'ru', 'ma'] }, { japanese: ['キ', 'ッ', 'ク'], romaji: ['ki', 'kku'] }, { japanese: ['ス', 'キ', 'ー'], romaji: ['su', 'ki', '-'] }, { japanese: ['姉', '妹'], romaji: ['si', 'mai'] }, { japanese: ['ス', 'ノ', 'ボ'], romaji: ['su', 'no', 'bo'] }, { japanese: ['リ', 'ボ', 'ン'], romaji: ['ri', 'bo', 'nn'] }, { japanese: ['ズ', 'ボ', 'ン'], romaji: ['zu', 'bo', 'n'] }, { japanese: ['ブ', 'ー', 'ツ'], romaji: ['bu', '-', 'tu'] }, { japanese: ['り', 'ん', 'ご'], romaji: ['ri', 'n', 'go'] }, { japanese: ['コ', 'ア', 'ラ'], romaji: ['ko', 'a', 'ra'] }, { japanese: ['レ', 'ン', 'ズ'], romaji: ['re', 'n', 'zu'] }, { japanese: ['ダ', 'イ', 'ヤ'], romaji: ['da', 'i', 'ya'] }, { japanese: ['ス', 'ル', 'メ'], romaji: ['su', 'ru', 'me'] }, { japanese: ['カ', 'レ', 'ー'], romaji: ['ka', 're', '-'] }, { japanese: ['メ', 'ロ', 'ン'], romaji: ['me', 'ro', 'n'] }, { japanese: ['メ', 'ダ', 'カ'], romaji: ['me', 'da', 'ka'] }, { japanese: ['寝', '言'], romaji: ['ne', 'go', 'to'] }
+        ];
+
+        let currentQuestion;
+        let currentIndex = 0;
+        let romajiProgress = '';
+        let progress = 0;
+
+        const startTimer = () => {
+            const timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    timerElement.textContent = `残り時間: ${timeLeft}秒`;
+                } else {
+                    clearInterval(timerInterval);
+                    alert("ゲーム終了！");
+                }
+            }, 1000);
+        };
+
+        const addTime = (seconds) => {
+            timeLeft += seconds;
+            timerElement.textContent = `残り時間: ${timeLeft}秒`;
+        };
+
+        const updateProgress = (increment) => {
+            if (increment) {
+                progress = Math.min(100, progress + 1); // 1%ずつ増加
+                if (progress >= 100) {
+                    addTime(3); // 100%で5秒追加
+                    progress = 0; // ゲージをリセット
+                } else if (progress >= 75) {
+                    addTime(2); // 75%以上で3秒追加
+                } else if (progress >= 50) {
+                    addTime(1); // 50%以上で1秒追加
+                } else if (progress >= 25) {
+                    addTime(1); // 25%以上で1秒追加
+                }
+            } else {
+                progress = 0; // リセット
+            }
+            progressElement.style.width = `${progress}%`;
+        };
+
+        const setQuestion = () => {
+            if (questions.length === 0) {
+                alert("すべてのお題が終了しました！");
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * questions.length);
+            currentQuestion = questions.splice(randomIndex, 1)[0];
+            currentIndex = 0;
+            romajiProgress = '';
+
+            japaneseText.innerHTML = '';
+            currentQuestion.japanese.forEach(char => {
+                const span = document.createElement('span');
+                span.textContent = char;
+                japaneseText.appendChild(span);
+            });
+
+            romajiContainer.innerHTML = '';
+            currentQuestion.romaji.join('').split('').forEach(char => {
+                const span = document.createElement('span');
+                span.textContent = char;
+                span.classList.add('letter');
+                romajiContainer.appendChild(span);
+            });
+
+            inputText.value = '';
+        };
+
+        const highlightProgress = () => {
+            const letters = romajiContainer.querySelectorAll('.letter');
+            const typedLength = currentQuestion.romaji.slice(0, currentIndex).join('').length + romajiProgress.length;
+
+            letters.forEach((letter, index) => {
+                letter.classList.remove('correct', 'current'); // 初期化
+                if (index < typedLength) {
+                    letter.classList.add('correct'); // 正解部分
+                } else if (index === typedLength) {
+                    letter.classList.add('current'); // 現在入力中
+                }
+            });
+        };
+
+        inputText.addEventListener('input', (e) => {
+            const inputChar = e.data || ''; // 入力文字を取得
+            romajiProgress += inputChar;
+
+            if (currentQuestion.romaji[currentIndex].startsWith(romajiProgress)) {
+                highlightProgress();
+
+                // 1つの文字列が正しく入力されたら
+                if (romajiProgress === currentQuestion.romaji[currentIndex]) {
+                    currentIndex++;
+                    romajiProgress = ''; // 次の文字に進む
+                    inputText.value = '';
+                    updateProgress(true);
+
+                    // 最後まで入力した場合
+                    if (currentIndex === currentQuestion.japanese.length) {
+                        setQuestion();
+                    }
+                }
+            } else {
+                romajiProgress = ''; // リセット
+                inputText.value = '';
+                updateProgress(false); // ミスでゲージリセット
+                highlightProgress();
+            }
+        });
+
+        setQuestion();
+        startTimer();
+    </script>
 </body>
 </html>
